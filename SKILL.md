@@ -20,6 +20,19 @@ Reads one or more academic papers and outputs a single self-contained HTML file.
 
 ## Step 1 — Read all papers
 
+**CRITICAL: Template Check Before Starting**
+Before doing anything else, locate the template file. Try these paths in order:
+1. `/mnt/skills/user/paper-reader/paper-reader-template.html` — skill installed in user skills
+2. `/mnt/user-data/uploads/paper-reader-template.html` — user uploaded it manually
+
+If neither path exists, tell the user:
+> "I can't find the Paper Reader template. Please upload `paper-reader-template.html` to the conversation and I'll assemble your reader."
+
+**Wait for the template.** Do not proceed to read papers without it.
+
+**Ask for Domain**
+Ask the user what domain or field they are working in (default is AI-EdTech) so you can tailor the `practicalImplications` extraction to their specific context.
+
 Read every paper the user has provided before extracting anything.
 
 If the user uploads PDFs, use the pdf-reading skill (`/mnt/skills/public/pdf-reading/SKILL.md`). If they paste text or provide URLs, use those directly.
@@ -74,8 +87,8 @@ For each paper, produce a JSON object matching **exactly** this schema. Do not o
     "Concept Name 1",
     "Concept Name 2"
   ],
-  "aiedImplications": [
-    "What this paper means for AI-EdTech product designers — specific, actionable, not generic.",
+  "practicalImplications": [
+    "What this paper means for practitioners in the target domain (default: AI-EdTech) — specific, actionable, not generic.",
     "Implication 2"
   ],
   "quiz": [
@@ -120,15 +133,9 @@ Collect all `keyConcepts` across every paper. For each unique concept, create on
 
 ## Step 4 — Assemble and output the HTML file
 
-Locate the template file. Try these paths in order, use the first one that exists:
-1. `/mnt/skills/user/paper-reader/paper-reader-template.html` — skill installed in user skills
-2. `/mnt/user-data/uploads/paper-reader-template.html` — user uploaded it manually
 
-If neither path exists, tell the user:
-> "I can't find the Paper Reader template. Please upload `paper-reader-template.html` to the conversation and I'll assemble your reader."
-Then wait — do not proceed without the template.
 
-Once you have the template, find the data injection block:
+Find the data injection block in the template:
 
 ```html
 <script id="paper-data" type="application/json">
@@ -148,6 +155,14 @@ Replace **only the contents of the paper-data script tag** with the assembled da
 
 **Critical — do not move or remove the `<script>init();</script>` line that follows the data block.** This call must appear after the `paper-data` closing tag so the DOM element exists when `init()` runs. If `init()` is placed inside or before the data block, the app will load with an empty library.
 
+**CRITICAL: Validation Before Output**
+Before calling `create_file`, you MUST validate the JSON data:
+1. **JSON Validity:** Ensure the JSON is structurally sound and parses correctly.
+2. **Data Completeness:** Verify that both `papers` and `glossaryTerms` arrays exist.
+3. **Paper Count Match:** Count the items in the `papers` array. It MUST exactly match the number of papers you read in Step 1. If it does not, fix the extraction before proceeding.
+4. **Essential Fields:** Check that every paper has an `id`, `title`, and `practicalImplications` array.
+
+If any validation fails, do not create the HTML file silently. Fix the data or alert the user.
 Output the complete HTML using `create_file` to `/mnt/user-data/outputs/paper-reader.html`, then use `present_files` to deliver it.
 
 Say:
@@ -167,25 +182,25 @@ Say:
 
 **strengths / weaknesses**: Critical assessments, not summaries. Weaknesses should name what the limitation prevents us from concluding — not just "small sample size." For review articles, weaknesses include selection bias in study choice, lack of systematic search criteria, and overgeneralisation across heterogeneous samples.
 
-**keyQuotes**: 1–2 sentences that crystallise the paper's argument or coin a concept. No methodological boilerplate.
+**keyQuotes**: 1–2 sentences that crystallise the paper's argument or coin a concept. Hard limit: maximum 40 words or 2-3 lines. No methodological boilerplate.
 
 **glossaryTerms explanation**: Substantial enough to stand alone as a mini explainer. Not a restatement of the definition.
 
-**aiedImplications**: 2–3 implications specifically for AI-EdTech product designers — people building tutoring systems, adaptive learning tools, or AI feedback engines. Not generic pedagogy restatements. Each implication should name a concrete design decision, risk, or opportunity the paper surfaces. Bad: "This paper suggests engagement matters." Good: "An AI tutor that defaults to effort praise in group-accountability contexts (e.g. class leaderboards) may increase anxiety rather than motivation — consider making praise mode context-sensitive."
+**practicalImplications**: 2–3 implications specifically for practitioners in the user's domain (default: AI-EdTech product designers). Not generic restatements. Each implication should name a concrete design decision, risk, or opportunity the paper surfaces. Bad: "This paper suggests engagement matters." Good: "An AI tutor that defaults to effort praise in group-accountability contexts (e.g. class leaderboards) may increase anxiety rather than motivation — consider making praise mode context-sensitive."
 
 **quiz**: 3–5 questions per paper. Must include all three of the following types — no exceptions:
 - **1 methodology question**: For empirical papers, ask about research design, sample, or analytical approach. For review articles or book chapters, ask about the scope, selection criteria, or synthesis method (e.g. "Which best describes the evidential basis of this chapter?").
 - **1 findings question**: Test a specific claim from the paper, ideally with a statistic, effect size, or named phenomenon. Generic comprehension does not qualify.
 - **1 critical thinking question**: Ask the reader to evaluate a limitation, apply a finding to a new context, or identify a tension between this paper and another. The correct answer must not be guessable without reading the paper.
 
-All distractors must be plausible — wrong answers should reflect common misconceptions, not obvious nonsense.
+All distractors must be plausible and concise (maximum 15 words per distractor) — wrong answers should reflect common misconceptions, not obvious nonsense.
 
 ---
 
 ## Common failure modes to avoid
 
 - **Generic findings**: "AI can be helpful in education" is not a finding.
-- **Generic aiedImplications**: "This paper has implications for EdTech" is not an implication. Name the specific design decision, tradeoff, or risk.
+- **Generic practicalImplications**: "This paper has implications for EdTech" is not an implication. Name the specific design decision, tradeoff, or risk.
 - **elevatorPitch that reads like an abstract**: Answer "so what?", not "what is this paper about."
 - **Forcing original-research methodology onto review articles**: If the paper synthesises other work, say so — don't invent a sample size or research design that doesn't exist.
 - **futureWork mixed with weaknesses**: futureWork = authors' own words; weaknesses = your external critique.
