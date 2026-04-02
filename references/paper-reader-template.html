@@ -1,0 +1,2013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paper Reader</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --ink: #1a1a2e;
+    --ink-soft: #4a4a6a;
+    --ink-faint: #8888aa;
+    --paper: #faf9f7;
+    --paper-warm: #f4f1ec;
+    --paper-border: #e8e4dc;
+    --accent: #c17b3f;
+    --accent-light: #f5e8d8;
+    --accent-dark: #8a5220;
+    --emerald: #2d6a4f;
+    --emerald-light: #d8f3dc;
+    --rose: #9b2335;
+    --rose-light: #fce4e4;
+    --indigo: #2d3a8c;
+    --indigo-light: #e8eaf6;
+    --amber: #92600a;
+    --amber-light: #fef3c7;
+    --shadow: 0 2px 12px rgba(26,26,46,0.08);
+    --shadow-lg: 0 8px 40px rgba(26,26,46,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+    font-size: 14px;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    background: var(--ink);
+    color: var(--paper);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .sidebar-header {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .logo-mark {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Lora', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .logo-text {
+    font-family: 'Lora', serif;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    color: var(--paper);
+  }
+
+  .sidebar-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    font-weight: 300;
+    letter-spacing: 0.4px;
+    padding-left: 42px;
+  }
+
+  .sidebar-nav {
+    padding: 16px 12px 8px;
+  }
+
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    padding: 0 8px;
+    margin: 16px 0 6px;
+  }
+
+  .nav-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.55);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    margin-bottom: 2px;
+  }
+
+  .nav-btn:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
+  .nav-btn.active { background: var(--accent); color: white; font-weight: 500; }
+
+  .nav-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+
+  .paper-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 12px 12px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+  }
+
+  .paper-list-item {
+    width: 100%;
+    text-align: left;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.45);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    transition: all 0.15s;
+    margin-bottom: 2px;
+    line-height: 1.4;
+  }
+
+  .paper-list-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.75); }
+  .paper-list-item.active { background: rgba(193,123,63,0.2); color: var(--accent); }
+
+  .paper-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-footer {
+    padding: 12px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .add-paper-btn {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px dashed rgba(255,255,255,0.2);
+    background: transparent;
+    color: rgba(255,255,255,0.4);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .add-paper-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(193,123,63,0.08); }
+
+  /* ── MAIN ── */
+  #main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .view { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+  .view.active { display: flex; }
+
+  /* ── EMPTY STATE ── */
+  #empty-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px;
+    background: var(--paper);
+  }
+
+  .empty-icon {
+    font-size: 56px;
+    margin-bottom: 20px;
+    opacity: 0.4;
+  }
+
+  .empty-title {
+    font-family: 'Lora', serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+
+  .empty-desc {
+    font-size: 14px;
+    color: var(--ink-faint);
+    max-width: 400px;
+    line-height: 1.7;
+    margin-bottom: 32px;
+  }
+
+  .empty-btn {
+    padding: 12px 28px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .empty-btn:hover { background: var(--accent-dark); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(193,123,63,0.3); }
+
+  /* ── LIBRARY VIEW ── */
+  #library-view {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #library-view.active { display: flex; }
+
+  .paper-header {
+    padding: 28px 40px 0;
+    border-bottom: 1px solid var(--paper-border);
+    background: white;
+  }
+
+  .paper-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .paper-meta-tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .paper-meta-sep { color: var(--paper-border); }
+
+  .paper-title {
+    font-family: 'Lora', serif;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--ink);
+    margin-bottom: 6px;
+    max-width: 820px;
+  }
+
+  .paper-authors {
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-style: italic;
+    margin-bottom: 20px;
+  }
+
+  .tab-bar {
+    display: flex;
+    gap: 0;
+  }
+
+  .tab-btn {
+    padding: 12px 20px;
+    border: none;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-faint);
+    cursor: pointer;
+    position: relative;
+    transition: color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .tab-btn:hover { color: var(--ink-soft); }
+  .tab-btn.active { color: var(--accent-dark); }
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 2px 2px 0 0;
+  }
+
+  .paper-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 40px;
+    background: var(--paper-warm);
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: white;
+    border: 1px solid var(--paper-border);
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .card-title-icon { font-size: 14px; }
+
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+
+  .body-text {
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--ink-soft);
+  }
+
+  .finding-item {
+    display: flex;
+    gap: 12px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+
+  .finding-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--emerald);
+    margin-top: 7px;
+    flex-shrink: 0;
+  }
+
+  .concept-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .concept-tag {
+    padding: 5px 12px;
+    background: var(--amber-light);
+    border: 1px solid #f5d89a;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--amber);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .concept-tag:hover { background: #fde68a; border-color: var(--amber); }
+
+  .implications-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .implication-card {
+    background: var(--indigo);
+    padding: 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.85);
+  }
+
+  .dark-card {
+    background: var(--indigo);
+    color: white;
+    border: none;
+  }
+
+  .dark-card .card-title { color: rgba(255,255,255,0.5); }
+
+  .aied-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-top: 20px;
+  }
+  .aied-card .card-title { color: rgba(255,255,255,0.5); margin-bottom: 14px; }
+  .aied-item {
+    background: rgba(99,102,241,0.12);
+    border: 1px solid rgba(99,102,241,0.25);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 10px;
+  }
+  .aied-item:last-child { margin-bottom: 0; }
+
+  /* Synthesis challenge banner */
+  .synthesis-challenge {
+    margin: 0 32px 28px;
+    background: linear-gradient(135deg, #312e81 0%, #4338ca 100%);
+    border-radius: 16px;
+    padding: 28px 32px;
+    color: white;
+  }
+  .synthesis-challenge-title { font-size: 17px; font-weight: 700; margin-bottom: 12px; }
+  .synthesis-challenge-q { font-size: 14px; line-height: 1.7; color: rgba(255,255,255,0.88); margin-bottom: 20px; }
+  .synthesis-challenge-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: white; color: #312e81;
+    border: none; border-radius: 50px;
+    padding: 10px 22px; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: opacity 0.15s;
+  }
+  .synthesis-challenge-btn:hover { opacity: 0.88; }
+
+  /* strengths / weaknesses */
+  .sw-item {
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.6;
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+
+  .sw-item.strength { background: var(--emerald-light); color: #1b4332; border: 1px solid #b7e4c7; }
+  .sw-item.weakness { background: var(--rose-light); color: #7f1d1d; border: 1px solid #fca5a5; }
+
+  .reflection-card {
+    background: var(--amber-light);
+    border: 1px solid #fcd34d;
+    border-radius: 14px;
+    padding: 20px 24px;
+  }
+
+  .reflection-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--amber);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .reflection-text {
+    font-style: italic;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: #92400e;
+  }
+
+  /* ── QUIZ ── */
+  .quiz-wrap { max-width: 640px; margin: 0 auto; }
+
+  .quiz-progress {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .quiz-progress-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .quiz-dots { display: flex; gap: 4px; }
+
+  .quiz-dot {
+    height: 4px;
+    width: 28px;
+    border-radius: 2px;
+    background: var(--paper-border);
+    transition: background 0.2s;
+  }
+  .quiz-dot.done { background: var(--accent); }
+  .quiz-dot.current { background: var(--accent-dark); }
+
+  .quiz-question-card {
+    background: white;
+    border: 1px solid var(--paper-border);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: var(--shadow-lg);
+    margin-bottom: 16px;
+  }
+
+  .quiz-q-text {
+    font-family: 'Lora', serif;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--ink);
+    margin-bottom: 28px;
+  }
+
+  .quiz-option {
+    width: 100%;
+    text-align: left;
+    padding: 14px 18px;
+    border-radius: 10px;
+    border: 1.5px solid var(--paper-border);
+    background: var(--paper-warm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: all 0.15s;
+    display: block;
+  }
+
+  .quiz-option:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-light); color: var(--accent-dark); }
+  .quiz-option.selected-correct { border-color: var(--emerald); background: var(--emerald-light); color: var(--emerald); font-weight: 600; }
+  .quiz-option.selected-wrong { border-color: var(--rose); background: var(--rose-light); color: var(--rose); }
+  .quiz-option.reveal-correct { border-color: var(--emerald); background: var(--emerald-light); color: var(--emerald); }
+  .quiz-option:disabled { cursor: default; }
+
+  .quiz-explanation {
+    background: var(--indigo-light);
+    border: 1px solid #c5cae9;
+    border-radius: 10px;
+    padding: 16px;
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--indigo);
+    margin-top: 16px;
+  }
+
+  .quiz-next-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-top: 16px;
+  }
+
+  .quiz-next-btn:hover { background: var(--accent-dark); }
+
+  .quiz-results {
+    text-align: center;
+    background: white;
+    border: 1px solid var(--paper-border);
+    border-radius: 16px;
+    padding: 48px 32px;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .score-ring {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: conic-gradient(var(--accent) var(--pct, 0%), var(--paper-border) 0%);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+  }
+
+  .score-inner {
+    width: 78px; height: 78px;
+    background: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Lora', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  /* ── SYNTHESIS ── */
+  #synthesis-view .view-header {
+    padding: 28px 40px 24px;
+    border-bottom: 1px solid var(--paper-border);
+    background: white;
+  }
+
+  .view-title {
+    font-family: 'Lora', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .view-desc { font-size: 13px; color: var(--ink-faint); }
+
+  .synthesis-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 40px;
+    background: var(--paper-warm);
+  }
+
+  .synthesis-paper-card {
+    background: white;
+    border: 1px solid var(--paper-border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: var(--shadow);
+  }
+
+  .synthesis-paper-card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(193,123,63,0.12); transform: translateY(-1px); }
+
+  .synthesis-paper-title {
+    font-family: 'Lora', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  .synthesis-paper-authors { font-size: 12px; color: var(--ink-faint); margin-bottom: 12px; font-style: italic; }
+
+  .synthesis-findings {
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+
+  .empty-library {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 60px;
+    color: var(--ink-faint);
+    font-size: 14px;
+  }
+
+  /* ── GLOSSARY ── */
+  #glossary-view {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #glossary-view.active { display: flex; }
+
+  .glossary-layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .glossary-sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--paper-border);
+    background: white;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .glossary-search {
+    padding: 16px;
+    border-bottom: 1px solid var(--paper-border);
+  }
+
+  .glossary-search input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid var(--paper-border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+    background: var(--paper-warm);
+    transition: border-color 0.15s;
+  }
+
+  .glossary-search input:focus { border-color: var(--accent); background: white; }
+
+  .glossary-terms-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    scrollbar-width: thin;
+  }
+
+  .glossary-term-btn {
+    width: 100%;
+    text-align: left;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 2px;
+  }
+
+  .glossary-term-btn:hover { background: var(--paper-warm); }
+  .glossary-term-btn.active { background: var(--accent); }
+
+  .glossary-term-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 2px;
+    transition: color 0.15s;
+  }
+
+  .glossary-term-btn.active .glossary-term-name { color: white; }
+
+  .glossary-term-def {
+    font-size: 11px;
+    color: var(--ink-faint);
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.15s;
+  }
+
+  .glossary-term-btn.active .glossary-term-def { color: rgba(255,255,255,0.65); }
+
+  .glossary-detail {
+    flex: 1;
+    overflow-y: auto;
+    padding: 48px;
+    background: var(--paper-warm);
+  }
+
+  .glossary-detail-term {
+    font-family: 'Lora', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .glossary-detail-def {
+    font-size: 15px;
+    font-style: italic;
+    color: var(--ink-soft);
+    border-left: 3px solid var(--accent);
+    padding-left: 16px;
+    margin-bottom: 32px;
+    line-height: 1.65;
+  }
+
+  .glossary-detail-section {
+    margin-bottom: 28px;
+  }
+
+  .glossary-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 10px;
+  }
+
+  .glossary-section-text {
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--ink-soft);
+  }
+
+  .glossary-example {
+    background: white;
+    border: 1px solid var(--paper-border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--ink-soft);
+    font-style: italic;
+    box-shadow: var(--shadow);
+  }
+
+  /* ── CHAT ── */
+  #chat-view {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #chat-view.active { display: flex; }
+
+  .chat-header {
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--paper-border);
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .chat-title-area { }
+  .chat-title { font-family: 'Lora', serif; font-size: 20px; font-weight: 700; color: var(--ink); }
+  .chat-subtitle { font-size: 12px; color: var(--ink-faint); margin-top: 2px; }
+
+  .api-key-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .api-key-input {
+    padding: 8px 12px;
+    border: 1.5px solid var(--paper-border);
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    width: 220px;
+    outline: none;
+    transition: border-color 0.15s;
+    background: var(--paper-warm);
+  }
+
+  .api-key-input:focus { border-color: var(--accent); background: white; }
+
+  .api-key-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+
+  .api-key-badge.connected { background: var(--emerald-light); color: var(--emerald); }
+  .api-key-badge.disconnected { background: var(--rose-light); color: var(--rose); }
+
+  .badge-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 40px;
+    background: var(--paper-warm);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    scrollbar-width: thin;
+  }
+
+  .message { display: flex; gap: 12px; max-width: 760px; }
+  .message.user { align-self: flex-end; flex-direction: row-reverse; }
+
+  .message-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Lora', serif;
+  }
+
+  .message.ai .message-avatar { background: var(--indigo); color: white; font-size: 12px; }
+  .message.user .message-avatar { background: var(--accent); color: white; font-size: 12px; }
+
+  .message-bubble {
+    padding: 14px 18px;
+    border-radius: 16px;
+    font-size: 13.5px;
+    line-height: 1.7;
+    max-width: 680px;
+  }
+
+  .message.ai .message-bubble {
+    background: white;
+    border: 1px solid var(--paper-border);
+    color: var(--ink-soft);
+    border-top-left-radius: 4px;
+    box-shadow: var(--shadow);
+  }
+
+  .message.user .message-bubble {
+    background: var(--indigo);
+    color: rgba(255,255,255,0.9);
+    border-top-right-radius: 4px;
+  }
+
+  .typing-dots {
+    display: flex;
+    gap: 4px;
+    padding: 4px 0;
+  }
+
+  .typing-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--ink-faint);
+    animation: bounce 1.2s infinite;
+  }
+
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+
+  .chat-input-area {
+    padding: 20px 40px;
+    border-top: 1px solid var(--paper-border);
+    background: white;
+    display: flex;
+    gap: 10px;
+  }
+
+  .chat-input {
+    flex: 1;
+    padding: 13px 18px;
+    border: 1.5px solid var(--paper-border);
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+    resize: none;
+    transition: border-color 0.15s;
+    background: var(--paper-warm);
+    height: 50px;
+  }
+
+  .chat-input:focus { border-color: var(--accent); background: white; }
+
+  .chat-send-btn {
+    padding: 0 20px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .chat-send-btn:hover { background: var(--accent-dark); }
+  .chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── ADD PAPER MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,26,46,0.6);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: white;
+    border-radius: 20px;
+    width: 640px;
+    max-height: 80vh;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .modal-header {
+    padding: 24px 28px 16px;
+    border-bottom: 1px solid var(--paper-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-title {
+    font-family: 'Lora', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .modal-close {
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--ink-faint);
+    padding: 4px;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+
+  .modal-close:hover { background: var(--paper-border); color: var(--ink); }
+
+  .modal-body {
+    padding: 24px 28px;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .modal-desc {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+    margin-bottom: 20px;
+    background: var(--accent-light);
+    border: 1px solid #f5d6b5;
+    border-radius: 10px;
+    padding: 14px;
+  }
+
+  .modal-desc code {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    background: rgba(0,0,0,0.06);
+    padding: 2px 5px;
+    border-radius: 4px;
+  }
+
+  .json-input {
+    width: 100%;
+    height: 280px;
+    padding: 14px;
+    border: 1.5px solid var(--paper-border);
+    border-radius: 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    resize: vertical;
+    outline: none;
+    background: var(--paper-warm);
+    transition: border-color 0.15s;
+  }
+
+  .json-input:focus { border-color: var(--accent); background: white; }
+
+  .modal-error {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: var(--rose-light);
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--rose);
+    display: none;
+  }
+
+  .modal-footer {
+    padding: 16px 28px;
+    border-top: 1px solid var(--paper-border);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .btn-secondary {
+    padding: 10px 20px;
+    border: 1.5px solid var(--paper-border);
+    border-radius: 8px;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-secondary:hover { background: var(--paper-warm); }
+
+  .btn-primary {
+    padding: 10px 24px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-primary:hover { background: var(--accent-dark); }
+
+  /* synthesis empty */
+  #synthesis-view .view-header {
+    padding: 28px 40px 24px;
+    border-bottom: 1px solid var(--paper-border);
+    background: white;
+  }
+  #synthesis-view .synthesis-content { flex: 1; overflow-y: auto; padding: 32px 40px; background: var(--paper-warm); }
+  #synthesis-view { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+  #synthesis-view.active { display: flex; }
+
+  /* scrollbar styling */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--paper-border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); }
+
+  @media (max-width: 768px) {
+    #sidebar { width: 220px; }
+    .paper-header { padding: 20px; }
+    .paper-content { padding: 20px; }
+    .card-grid { grid-template-columns: 1fr; }
+    .implications-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="logo-mark">P</div>
+      <span class="logo-text">Paper Reader</span>
+    </div>
+    <div class="sidebar-sub">Academic Deep Reading</div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Workspace</div>
+    <button class="nav-btn active" id="nav-library" onclick="switchView('library')">
+      <span class="nav-icon">📖</span> Paper Library
+    </button>
+    <button class="nav-btn" id="nav-synthesis" onclick="switchView('synthesis')">
+      <span class="nav-icon">🔍</span> Overview & Synthesis
+    </button>
+    <button class="nav-btn" id="nav-glossary" onclick="switchView('glossary')">
+      <span class="nav-icon">💡</span> Concept Glossary
+    </button>
+    <button class="nav-btn" id="nav-chat" onclick="switchView('chat')">
+      <span class="nav-icon">💬</span> Research Assistant
+    </button>
+
+    <div class="nav-section-label">Loaded Papers</div>
+  </nav>
+
+  <div class="paper-list" id="paper-list">
+    <div style="padding: 8px 12px; font-size: 11px; color: rgba(255,255,255,0.2); font-style: italic;">No papers loaded yet</div>
+  </div>
+
+  <div class="sidebar-footer">
+    <button class="add-paper-btn" onclick="openModal()">
+      <span>＋</span> Add Paper
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main id="main">
+
+  <div id="empty-state" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px;background:var(--paper);">
+    <div class="empty-icon">📄</div>
+    <h2 class="empty-title">No papers loaded</h2>
+    <p class="empty-desc">Use the <strong>paper-reader skill</strong> in Claude — give it your PDFs and it will output a ready-to-open HTML file with everything pre-loaded.</p>
+  </div>
+
+  <!-- LIBRARY VIEW -->
+  <div id="library-view">
+    <div class="paper-header">
+      <div class="paper-meta">
+        <span class="paper-meta-tag" id="ph-journal">Journal</span>
+        <span class="paper-meta-sep">·</span>
+        <span class="paper-meta-tag" id="ph-year">Year</span>
+      </div>
+      <h1 class="paper-title" id="ph-title">Paper Title</h1>
+      <p class="paper-authors" id="ph-authors">Authors</p>
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('overview', this)">📋 Overview</button>
+        <button class="tab-btn" onclick="switchTab('analysis', this)">🔬 Critical Analysis</button>
+        <button class="tab-btn" onclick="switchTab('quiz', this)">❓ Knowledge Check</button>
+      </div>
+    </div>
+
+    <div class="paper-content">
+      <!-- OVERVIEW -->
+      <div id="tab-overview">
+        <div class="card">
+          <div class="card-title" style="color:var(--indigo)">
+            <span class="card-title-icon">📝</span> Abstract
+          </div>
+          <p class="body-text" id="p-abstract"></p>
+        </div>
+
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-title" style="color:var(--indigo)">
+              <span class="card-title-icon">⚗️</span> Methodology
+            </div>
+            <p class="body-text" id="p-methodology"></p>
+          </div>
+          <div class="card">
+            <div class="card-title" style="color:var(--emerald)">
+              <span class="card-title-icon">✅</span> Key Findings
+            </div>
+            <div id="p-findings"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color:var(--amber)">
+            <span class="card-title-icon">🏷️</span> Key Concepts
+          </div>
+          <div class="concept-tags" id="p-concepts"></div>
+        </div>
+
+        <div class="card dark-card">
+          <div class="card-title">
+            <span class="card-title-icon">🎓</span> Pedagogical Implications
+          </div>
+          <div class="implications-grid" id="p-implications"></div>
+        </div>
+
+        <div class="aied-card">
+          <div class="card-title">
+            <span class="card-title-icon">🤖</span> AI-EdTech Product Implications
+          </div>
+          <div id="p-aied"></div>
+        </div>
+      </div>
+
+      <!-- ANALYSIS -->
+      <div id="tab-analysis" style="display:none;">
+        <div class="card-grid" style="margin-bottom:0;">
+          <div>
+            <div class="card-title" style="color:var(--emerald);padding:0 4px;margin-bottom:14px;">
+              <span class="card-title-icon">✅</span> Research Strengths
+            </div>
+            <div id="p-strengths"></div>
+          </div>
+          <div>
+            <div class="card-title" style="color:var(--rose);padding:0 4px;margin-bottom:14px;">
+              <span class="card-title-icon">⚠️</span> Critical Weaknesses
+            </div>
+            <div id="p-weaknesses"></div>
+          </div>
+        </div>
+        <div class="reflection-card" style="margin-top:20px;">
+          <div class="reflection-label">🔍 Critical Reflection Prompt</div>
+          <p class="reflection-text" id="p-reflection">Consider how the findings of this paper might be challenged if replicated in a different cultural context or with a more diverse sample. Does the methodology adequately account for confounding variables?</p>
+        </div>
+      </div>
+
+      <!-- QUIZ -->
+      <div id="tab-quiz" style="display:none;">
+        <div class="quiz-wrap" id="quiz-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SYNTHESIS VIEW -->
+  <div id="synthesis-view">
+    <div class="view-header">
+      <h2 class="view-title">Thematic Synthesis Lab</h2>
+      <p class="view-desc">Identifying cross-cutting themes and common problems across the loaded papers. Each card shows a shared concept and which papers address it.</p>
+    </div>
+    <div class="synthesis-content" id="synthesis-content">
+      <div class="empty-library">
+        <div style="font-size:40px;margin-bottom:16px;opacity:0.3;">📚</div>
+        <p>Load papers using the button in the sidebar to see them here.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- GLOSSARY VIEW -->
+  <div id="glossary-view">
+    <div class="glossary-layout">
+      <div class="glossary-sidebar">
+        <div class="glossary-search">
+          <input type="text" id="glossary-search-input" placeholder="Search terms..." oninput="filterGlossary(this.value)">
+        </div>
+        <div class="glossary-terms-list" id="glossary-terms-list">
+          <div style="padding:16px;font-size:12px;color:var(--ink-faint);text-align:center;">Load papers to populate the glossary</div>
+        </div>
+      </div>
+      <div class="glossary-detail" id="glossary-detail">
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;text-align:center;color:var(--ink-faint);">
+          <div style="font-size:40px;margin-bottom:16px;opacity:0.3;">💡</div>
+          <p style="font-size:14px;">Select a term to view its explanation</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAT VIEW -->
+  <div id="chat-view">
+    <div class="chat-header">
+      <div class="chat-title-area">
+        <div class="chat-title">Research Assistant</div>
+        <div class="chat-subtitle">Ask questions about any loaded paper</div>
+      </div>
+      <div class="api-key-area">
+        <input type="password" class="api-key-input" id="api-key-input" placeholder="sk-ant-... (Anthropic API key)" oninput="updateApiStatus()">
+        <div class="api-key-badge disconnected" id="api-status-badge">
+          <div class="badge-dot"></div> No Key
+        </div>
+      </div>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="message ai">
+        <div class="message-avatar">AI</div>
+        <div class="message-bubble">Hello! I'm your Research Assistant. Load a paper and enter your Anthropic API key above to start asking questions. I can help you understand methodologies, critique findings, compare papers, and explore key concepts.</div>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <textarea class="chat-input" id="chat-input" placeholder="Ask a question about the research..." onkeydown="handleChatKey(event)"></textarea>
+      <button class="chat-send-btn" id="send-btn" onclick="sendMessage()" title="Send">➤</button>
+    </div>
+  </div>
+
+</main>
+
+<!-- ADD PAPER MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Load a Paper</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-desc">
+        Use the <strong>paper-reader skill</strong> in Claude to extract structured JSON from any PDF or paper.
+        Then paste the JSON here. The format should have fields like <code>title</code>, <code>authors</code>, <code>abstract</code>, <code>quiz</code>, etc.
+      </div>
+      <textarea class="json-input" id="json-input" placeholder='Paste paper JSON here...&#10;{&#10;  "id": "smith-2024",&#10;  "title": "...",&#10;  ...&#10;}'></textarea>
+      <div class="modal-error" id="modal-error"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="loadPaper()">Load Paper</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+let papers = [];
+let selectedPaperId = null;
+let currentTab = 'overview';
+let currentView = 'library';
+let quizState = {};
+let glossaryTerms = [];
+let activeGlossaryTerm = null;
+
+// ── VIEW SWITCHING ──
+function switchView(view) {
+  currentView = view;
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('nav-' + view).classList.add('active');
+
+  document.getElementById('library-view').classList.toggle('active', false);
+  document.getElementById('synthesis-view').classList.toggle('active', false);
+  document.getElementById('glossary-view').classList.toggle('active', false);
+  document.getElementById('chat-view').classList.toggle('active', false);
+
+  if (view === 'library') {
+    if (papers.length === 0) {
+      document.getElementById('empty-state').style.display = 'flex';
+      document.getElementById('library-view').classList.remove('active');
+    } else {
+      document.getElementById('empty-state').style.display = 'none';
+      document.getElementById('library-view').classList.add('active');
+    }
+  } else {
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById(view + '-view').classList.add('active');
+  }
+}
+
+// ── TAB SWITCHING ──
+function switchTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-overview').style.display = tab === 'overview' ? 'block' : 'none';
+  document.getElementById('tab-analysis').style.display = tab === 'analysis' ? 'block' : 'none';
+  document.getElementById('tab-quiz').style.display = tab === 'quiz' ? 'block' : 'none';
+  if (tab === 'quiz') renderQuiz();
+}
+
+// ── MODAL ──
+function openModal() {
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('json-input').value = '';
+  document.getElementById('modal-error').style.display = 'none';
+  setTimeout(() => document.getElementById('json-input').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal')) closeModal();
+});
+
+// ── LOAD PAPER ──
+function loadPaper() {
+  const raw = document.getElementById('json-input').value.trim();
+  const errEl = document.getElementById('modal-error');
+  errEl.style.display = 'none';
+
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch(e) {
+    errEl.textContent = 'Invalid JSON. Please check the format and try again.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const required = ['id','title','authors','year','journal','abstract'];
+  for (const f of required) {
+    if (!data[f]) {
+      errEl.textContent = `Missing required field: "${f}"`;
+      errEl.style.display = 'block';
+      return;
+    }
+  }
+
+  // Merge glossaryTerms
+  if (data.glossaryTerms && Array.isArray(data.glossaryTerms)) {
+    for (const t of data.glossaryTerms) {
+      if (!glossaryTerms.find(g => g.term === t.term)) {
+        glossaryTerms.push(t);
+      }
+    }
+    renderGlossaryList();
+  }
+
+  // Remove duplicate
+  papers = papers.filter(p => p.id !== data.id);
+  papers.push(data);
+
+  closeModal();
+  selectPaper(data.id);
+  renderPaperList();
+  renderSynthesis();
+}
+
+// ── RENDER PAPER LIST ──
+function renderPaperList() {
+  const el = document.getElementById('paper-list');
+  if (papers.length === 0) {
+    el.innerHTML = '<div style="padding: 8px 12px; font-size: 11px; color: rgba(255,255,255,0.2); font-style: italic;">No papers loaded yet</div>';
+    return;
+  }
+  el.innerHTML = papers.map(p => `
+    <button class="paper-list-item ${p.id === selectedPaperId ? 'active' : ''}" onclick="selectPaper('${p.id}')">
+      <div class="paper-dot"></div>
+      <span>${p.title}</span>
+    </button>
+  `).join('');
+}
+
+// ── SELECT PAPER ──
+function selectPaper(id) {
+  selectedPaperId = id;
+  const paper = papers.find(p => p.id === id);
+  if (!paper) return;
+
+  // Reset quiz
+  quizState = {
+    current: 0,
+    score: 0,
+    answers: [],
+    answered: false,
+    done: false
+  };
+
+  // Update header
+  document.getElementById('ph-journal').textContent = paper.journal || 'Journal';
+  document.getElementById('ph-year').textContent = paper.year || '';
+  document.getElementById('ph-title').textContent = paper.title;
+  document.getElementById('ph-authors').textContent = paper.authors || '';
+
+  // Abstract & methodology
+  document.getElementById('p-abstract').textContent = paper.abstract || '';
+  document.getElementById('p-methodology').textContent = paper.methodology || '';
+
+  // Findings
+  const findings = paper.keyFindings || [];
+  document.getElementById('p-findings').innerHTML = findings.map(f =>
+    `<div class="finding-item"><div class="finding-dot"></div><span>${f}</span></div>`
+  ).join('');
+
+  // Concepts
+  const concepts = paper.keyConcepts || [];
+  document.getElementById('p-concepts').innerHTML = concepts.map(c =>
+    `<span class="concept-tag" onclick="openGlossaryTerm('${c}')">${c}</span>`
+  ).join('');
+
+  // Implications
+  const impls = paper.pedagogicalImplications || [];
+  document.getElementById('p-implications').innerHTML = impls.map(i =>
+    `<div class="implication-card">${i}</div>`
+  ).join('');
+
+  // AIED Implications
+  const aiedImpls = paper.aiedImplications || [];
+  document.getElementById('p-aied').innerHTML = aiedImpls.length
+    ? aiedImpls.map(i => `<div class="aied-item">${i}</div>`).join('')
+    : '<div class="aied-item" style="color:rgba(255,255,255,0.4);font-style:italic;">No AIED product implications extracted.</div>';
+
+  // Strengths
+  const strengths = paper.strengths || [];
+  document.getElementById('p-strengths').innerHTML = strengths.map(s =>
+    `<div class="sw-item strength">✓ ${s}</div>`
+  ).join('');
+
+  // Weaknesses
+  const weaknesses = paper.weaknesses || [];
+  document.getElementById('p-weaknesses').innerHTML = weaknesses.map(w =>
+    `<div class="sw-item weakness">⚠ ${w}</div>`
+  ).join('');
+
+  renderPaperList();
+  switchView('library');
+
+  // Reset tabs
+  currentTab = 'overview';
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+  document.getElementById('tab-overview').style.display = 'block';
+  document.getElementById('tab-analysis').style.display = 'none';
+  document.getElementById('tab-quiz').style.display = 'none';
+}
+
+// ── QUIZ ──
+function renderQuiz() {
+  const paper = papers.find(p => p.id === selectedPaperId);
+  if (!paper || !paper.quiz || paper.quiz.length === 0) {
+    document.getElementById('quiz-container').innerHTML = '<div style="text-align:center;padding:60px;color:var(--ink-faint);">No quiz questions available for this paper.</div>';
+    return;
+  }
+
+  if (quizState.done) {
+    renderQuizResults(paper);
+    return;
+  }
+
+  const q = paper.quiz[quizState.current];
+  const total = paper.quiz.length;
+
+  const dots = paper.quiz.map((_, i) => {
+    let cls = '';
+    if (i < quizState.current) cls = 'done';
+    else if (i === quizState.current) cls = 'current';
+    return `<div class="quiz-dot ${cls}"></div>`;
+  }).join('');
+
+  const options = q.options.map((opt, i) => {
+    let cls = '';
+    if (quizState.answered) {
+      if (i === q.correctAnswer) cls = 'selected-correct';
+      else if (i === quizState.answers[quizState.current]) cls = 'selected-wrong';
+    }
+    return `<button class="quiz-option ${cls}" onclick="answerQuiz(${i})" ${quizState.answered ? 'disabled' : ''}>${opt}</button>`;
+  }).join('');
+
+  const explanation = quizState.answered
+    ? `<div class="quiz-explanation">📖 ${q.explanation}</div>`
+    : '';
+
+  const nextLabel = quizState.current < total - 1 ? 'Next Question →' : 'See Results';
+  const nextBtn = quizState.answered
+    ? `<button class="quiz-next-btn" onclick="nextQuestion()">  ${nextLabel}</button>`
+    : '';
+
+  document.getElementById('quiz-container').innerHTML = `
+    <div class="quiz-progress">
+      <span class="quiz-progress-label">Question ${quizState.current + 1} of ${total}</span>
+      <div class="quiz-dots">${dots}</div>
+    </div>
+    <div class="quiz-question-card">
+      <p class="quiz-q-text">${q.question}</p>
+      ${options}
+      ${explanation}
+    </div>
+    ${nextBtn}
+  `;
+}
+
+function answerQuiz(index) {
+  if (quizState.answered) return;
+  const paper = papers.find(p => p.id === selectedPaperId);
+  const q = paper.quiz[quizState.current];
+  const correct = index === q.correctAnswer;
+  quizState.answers[quizState.current] = index;
+  if (correct) quizState.score++;
+  quizState.answered = true;
+  renderQuiz();
+}
+
+function nextQuestion() {
+  const paper = papers.find(p => p.id === selectedPaperId);
+  if (quizState.current < paper.quiz.length - 1) {
+    quizState.current++;
+    quizState.answered = false;
+    renderQuiz();
+  } else {
+    quizState.done = true;
+    renderQuiz();
+  }
+}
+
+function renderQuizResults(paper) {
+  const pct = Math.round((quizState.score / paper.quiz.length) * 100);
+  const deg = pct * 3.6;
+  const msg = pct >= 80 ? "Excellent understanding!" : pct >= 60 ? "Good effort — review the weak spots." : "Consider re-reading the paper.";
+  document.getElementById('quiz-container').innerHTML = `
+    <div class="quiz-results">
+      <div class="score-ring" style="--pct: ${deg}deg;">
+        <div class="score-inner">${pct}%</div>
+      </div>
+      <div style="font-family:'Lora',serif;font-size:22px;font-weight:700;color:var(--ink);margin-bottom:8px;">${msg}</div>
+      <div style="font-size:13px;color:var(--ink-faint);margin-bottom:28px;">You got ${quizState.score} out of ${paper.quiz.length} correct</div>
+      <button class="quiz-next-btn" style="max-width:200px;margin:0 auto;" onclick="retakeQuiz()">↺ Retake Quiz</button>
+    </div>
+  `;
+}
+
+function retakeQuiz() {
+  quizState = { current: 0, score: 0, answers: [], answered: false, done: false };
+  renderQuiz();
+}
+
+// ── SYNTHESIS ──
+function renderSynthesis() {
+  const el = document.getElementById('synthesis-content');
+  if (papers.length < 2) {
+    el.innerHTML = '<div class="empty-library"><div style="font-size:40px;margin-bottom:16px;opacity:0.3;">🔗</div><p>Load at least 2 papers to see cross-paper themes.</p></div>';
+    return;
+  }
+
+  // Layer 1: glossary terms shared across 2+ papers (relatedPapers field)
+  const sharedThemes = glossaryTerms
+    .filter(t => t.relatedPapers && t.relatedPapers.length >= 2)
+    .map(t => ({ title: t.term, desc: t.definition, paperIds: t.relatedPapers, icon: "⚡" }));
+
+  // Layer 2: keyConcepts appearing in 2+ papers (catches anything glossary missed)
+  const conceptMap = {};
+  papers.forEach(p => {
+    (p.keyConcepts || []).forEach(c => {
+      const key = c.toLowerCase().trim();
+      if (!conceptMap[key]) conceptMap[key] = { label: c, paperIds: [] };
+      if (!conceptMap[key].paperIds.includes(p.id)) conceptMap[key].paperIds.push(p.id);
+    });
+  });
+  const conceptThemes = Object.values(conceptMap)
+    .filter(c => c.paperIds.length >= 2)
+    .filter(c => !sharedThemes.find(t => t.title.toLowerCase() === c.label.toLowerCase()))
+    .map(c => ({ title: c.label, desc: null, paperIds: c.paperIds, icon: "🔗" }));
+
+  // Layer 3: pedagogical implications keyword clustering
+  const implKeywords = {
+    "Effort & Attribution": ["effort", "attribution", "praise"],
+    "Deliberate Practice vs. Engagement": ["deliberate practice", "effortful"],
+    "Scaffolding & Support": ["scaffold", "support", "utility", "relevance"],
+    "Mindset & Persistence": ["mindset", "growth", "grit", "persist", "helpless", "mastery"],
+    "Cultural Context in Learning": ["cultur", "collectiv", "individuali"],
+    "Interest Development": ["interest", "curiosity", "phase", "trigger"],
+  };
+  const allSoFar = [...sharedThemes, ...conceptThemes];
+  const implThemes = [];
+  Object.entries(implKeywords).forEach(([label, kws]) => {
+    const matchPapers = papers.filter(p =>
+      (p.pedagogicalImplications || []).some(impl => kws.some(kw => impl.toLowerCase().includes(kw)))
+    );
+    if (matchPapers.length >= 2 && !allSoFar.find(t => t.title === label)) {
+      const sample = matchPapers[0].pedagogicalImplications.find(impl => kws.some(kw => impl.toLowerCase().includes(kw)));
+      implThemes.push({ title: label, desc: sample ? sample.slice(0, 130) + "…" : null, paperIds: matchPapers.map(p => p.id), icon: "📌" });
+    }
+  });
+
+  const finalThemes = [...allSoFar, ...implThemes];
+  if (finalThemes.length === 0) {
+    el.innerHTML = "<div class=\"empty-library\"><p>No cross-paper themes detected. Ensure glossaryTerms have relatedPapers filled.</p></div>";
+    return;
+  }
+
+  const paperLabel = id => {
+    const p = papers.find(x => x.id === id);
+    return p ? p.authors.split(",")[0].trim() + " " + p.year : id;
+  };
+
+  // Generate a synthesis challenge question from the top shared theme
+  const topTheme = finalThemes[0];
+  const challengeQ = topTheme
+    ? "Based on the papers reviewed, how does <strong>" + topTheme.title +
+      "</strong> manifest differently across the " + papers.length +
+      " papers loaded? What would a product designer need to resolve before applying these findings together?"
+    : "What tensions or contradictions exist across the loaded papers, and how might a product designer reconcile them?";
+
+  const challengeHtml =
+    "<div class=\"synthesis-challenge\">" +
+      "<div class=\"synthesis-challenge-title\">💡 Synthesis Challenge</div>" +
+      "<div class=\"synthesis-challenge-q\">" + challengeQ + "</div>" +
+      "<button class=\"synthesis-challenge-btn\" onclick=\"switchView('chat');\">" +
+        "<span>💬</span> Discuss with Research Assistant" +
+      "</button>" +
+    "</div>";
+
+  el.style.padding = "0";
+  el.innerHTML = challengeHtml + "<div class=\"theme-grid\">" + finalThemes.map(theme =>
+    "<div class=\"theme-card\">" +
+      "<div class=\"theme-card-header\">" +
+        "<div class=\"theme-icon\">" + theme.icon + "</div>" +
+        "<div class=\"theme-paper-tags\">" +
+          theme.paperIds.map(id =>
+            "<span class=\"theme-paper-tag\" onclick=\"switchView('library');selectPaper('" + id + "')\">" + paperLabel(id) + "</span>"
+          ).join("") +
+        "</div>" +
+      "</div>" +
+      "<div class=\"theme-card-title\">" + theme.title + "</div>" +
+      (theme.desc ? "<div class=\"theme-card-desc\">" + theme.desc + "</div>" : "") +
+    "</div>"
+  ).join("") + "</div>";
+}
+
+// ── GLOSSARY ──
+function renderGlossaryList(filter = '') {
+  const el = document.getElementById('glossary-terms-list');
+  const terms = glossaryTerms.filter(t =>
+    t.term.toLowerCase().includes(filter.toLowerCase()) ||
+    (t.definition || '').toLowerCase().includes(filter.toLowerCase())
+  );
+
+  if (terms.length === 0) {
+    el.innerHTML = `<div style="padding:16px;font-size:12px;color:var(--ink-faint);text-align:center;">${filter ? 'No matching terms' : 'Load papers to populate the glossary'}</div>`;
+    return;
+  }
+
+  el.innerHTML = terms.map(t => `
+    <button class="glossary-term-btn ${activeGlossaryTerm === t.term ? 'active' : ''}" onclick="selectGlossaryTerm('${t.term.replace(/'/g,"\\'")}')">
+      <div class="glossary-term-name">${t.term}</div>
+      <div class="glossary-term-def">${t.definition || ''}</div>
+    </button>
+  `).join('');
+}
+
+function filterGlossary(val) {
+  renderGlossaryList(val);
+}
+
+function selectGlossaryTerm(term) {
+  activeGlossaryTerm = term;
+  const t = glossaryTerms.find(g => g.term === term);
+  if (!t) return;
+  renderGlossaryList(document.getElementById('glossary-search-input').value);
+
+  document.getElementById('glossary-detail').innerHTML = `
+    <div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;color:var(--accent);margin-bottom:16px;display:flex;align-items:center;gap:6px;">
+        💡 Technical Concept
+      </div>
+      <div class="glossary-detail-term">${t.term}</div>
+      <div class="glossary-detail-def">${t.definition || ''}</div>
+      <div class="glossary-detail-section">
+        <div class="glossary-section-label">In-Depth Explanation</div>
+        <p class="glossary-section-text">${t.explanation || ''}</p>
+      </div>
+      ${t.example ? `
+      <div class="glossary-detail-section">
+        <div class="glossary-section-label">Practical Example</div>
+        <div class="glossary-example">"${t.example}"</div>
+      </div>` : ''}
+    </div>
+  `;
+}
+
+function openGlossaryTerm(term) {
+  switchView('glossary');
+  document.getElementById('nav-glossary').classList.add('active');
+  setTimeout(() => selectGlossaryTerm(term), 50);
+}
+
+// ── CHAT ──
+let chatApiKey = '';
+
+function updateApiStatus() {
+  const key = document.getElementById('api-key-input').value.trim();
+  chatApiKey = key;
+  const badge = document.getElementById('api-status-badge');
+  if (key.startsWith('sk-ant-') && key.length > 20) {
+    badge.className = 'api-key-badge connected';
+    badge.innerHTML = '<div class="badge-dot"></div> Connected';
+  } else {
+    badge.className = 'api-key-badge disconnected';
+    badge.innerHTML = '<div class="badge-dot"></div> No Key';
+  }
+}
+
+function handleChatKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  if (!chatApiKey || !chatApiKey.startsWith('sk-ant-')) {
+    appendMessage('ai', '⚠️ Please enter a valid Anthropic API key above to use the Research Assistant.');
+    return;
+  }
+
+  if (papers.length === 0) {
+    appendMessage('ai', '⚠️ Please load at least one paper before asking questions.');
+    return;
+  }
+
+  input.value = '';
+  appendMessage('user', msg);
+  document.getElementById('send-btn').disabled = true;
+
+  // Typing indicator
+  const typingId = 'typing-' + Date.now();
+  const messagesEl = document.getElementById('chat-messages');
+  messagesEl.innerHTML += `
+    <div class="message ai" id="${typingId}">
+      <div class="message-avatar">AI</div>
+      <div class="message-bubble"><div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>
+    </div>`;
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+
+  const context = papers.map(p => `
+Paper: "${p.title}" (${p.authors}, ${p.year})
+Abstract: ${p.abstract}
+Methodology: ${p.methodology || ''}
+Key Findings: ${(p.keyFindings || []).join('; ')}
+Strengths: ${(p.strengths || []).join('; ')}
+Weaknesses: ${(p.weaknesses || []).join('; ')}
+Key Concepts: ${(p.keyConcepts || []).join(', ')}
+  `.trim()).join('\n\n---\n\n');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': chatApiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1024,
+        system: `You are a rigorous academic research assistant embedded in a paper reading tool. You have access to structured data from the following papers:\n\n${context}\n\nAnswer questions critically, cite specific papers and findings, and maintain scholarly rigor. Be concise but substantive. If the user asks about something not covered by the loaded papers, say so clearly.`,
+        messages: [{ role: 'user', content: msg }]
+      })
+    });
+
+    const data = await res.json();
+    document.getElementById(typingId).remove();
+
+    if (data.content && data.content[0]) {
+      appendMessage('ai', data.content[0].text);
+    } else if (data.error) {
+      appendMessage('ai', `Error: ${data.error.message}`);
+    }
+  } catch(e) {
+    document.getElementById(typingId)?.remove();
+    appendMessage('ai', 'Connection error. Please check your API key and try again.');
+  }
+
+  document.getElementById('send-btn').disabled = false;
+}
+
+function appendMessage(role, text) {
+  const el = document.getElementById('chat-messages');
+  const avatar = role === 'ai' ? 'AI' : 'You';
+  el.innerHTML += `
+    <div class="message ${role}">
+      <div class="message-avatar">${avatar}</div>
+      <div class="message-bubble">${text.replace(/\n/g, '<br>')}</div>
+    </div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+// ── INIT ──
+function init() {
+  const dataEl = document.getElementById('paper-data');
+  if (!dataEl) { switchView('library'); return; }
+
+  let payload;
+  try { payload = JSON.parse(dataEl.textContent.trim()); } catch(e) { switchView('library'); return; }
+
+  const loadedPapers = payload.papers || [];
+  const loadedGlossary = payload.glossaryTerms || [];
+
+  if (loadedPapers.length === 0) { switchView('library'); return; }
+
+  // Load glossary terms
+  glossaryTerms = loadedGlossary;
+  renderGlossaryList();
+
+  // Load all papers silently
+  loadedPapers.forEach(p => {
+    papers = papers.filter(x => x.id !== p.id);
+    papers.push(p);
+  });
+
+  renderPaperList();
+  renderSynthesis();
+
+  // Select first paper and show library
+  selectPaper(loadedPapers[0].id);
+}
+
+</script>
+
+<!-- ── DATA INJECTION BLOCK — Claude fills this in ── -->
+<script id="paper-data" type="application/json">
+{"papers":[],"glossaryTerms":[]}
+</script>
+<script>init();</script>
+
+</body>
+</html>
