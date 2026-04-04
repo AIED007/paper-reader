@@ -58,7 +58,9 @@ When multiple papers are provided:
 paper-reader/
 ├── SKILL.md                      # Skill instructions for Claude
 ├── README.md                     # This file
-└── references/                   # Reference materials
+└── references/
+    ├── paper-reader-template.html  # HTML template (embedded at assembly time)
+    └── pdf_to_txt.py               # PDF pre-processing helper (Claude Code)
 ```
 
 ## ⚙️ Requirements
@@ -68,6 +70,21 @@ paper-reader/
   - `/mnt/skills/user/paper-reader/paper-reader-template.html` (preferred), or
   - uploaded manually to the conversation
 - For **AI Chat** tab: an [Anthropic API key](https://console.anthropic.com/)
+
+## 🖥️ Local PDF Pre-processing (Claude Code)
+
+When running in **Claude Code** with local PDF files, large PDFs (>5MB or >30 pages) cannot be read directly — the embedded images and layout data inflate the file size beyond the tool limit. Use the included helper script to extract plain text first:
+
+```bash
+# Install dependency (once)
+pip install PyPDF2
+
+# Extract text from all PDFs in one command
+python3 references/pdf_to_txt.py paper1.pdf paper2.pdf paper3.pdf
+# → Creates paper1.pdf.txt, paper2.pdf.txt, paper3.pdf.txt
+```
+
+Claude will then read the `.txt` files instead of the original PDFs. This step is handled automatically when you invoke the skill — no manual action needed.
 
 ## 📊 Output Quality Standards
 

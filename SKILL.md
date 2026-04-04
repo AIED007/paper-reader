@@ -35,7 +35,36 @@ Ask the user what domain or field they are working in (default is AI-EdTech) so 
 
 Read every paper the user has provided before extracting anything.
 
-If the user uploads PDFs, use the pdf-reading skill (`/mnt/skills/public/pdf-reading/SKILL.md`). If they paste text or provide URLs, use those directly.
+**Handling PDFs — choose the right path based on environment:**
+
+| Situation | Action |
+|---|---|
+| Running in Claude.ai (web) | Use the pdf-reading skill: `/mnt/skills/public/pdf-reading/SKILL.md` |
+| Running in Claude Code (local files) | Use the **local PDF pre-processing flow** below |
+| User pastes text or provides URLs | Use directly — no conversion needed |
+
+**Local PDF pre-processing flow (Claude Code only):**
+
+PDFs read directly via the `Read` tool often fail with "Request too large" when files exceed ~5MB, because embedded images and layout data inflate file size. The solution is to extract plain text first using the helper script in `references/pdf_to_txt.py`.
+
+```
+Step 1a — Check if PyPDF2 is installed:
+    python3 -c "import PyPDF2" 2>/dev/null || pip3 install PyPDF2
+
+Step 1b — Run the extractor on all PDFs in one command:
+    python3 ~/.claude/skills/paper-reader/references/pdf_to_txt.py \
+        "paper1.pdf" "paper2.pdf" "paper3.pdf"
+    (use the actual absolute paths)
+
+Step 1c — Verify output. The script prints "OK  <path>  (N KB)" for each
+    successful file. If any file shows "FAIL", report it to the user before
+    continuing.
+
+Step 1d — Read the resulting .txt files with the Read tool instead of
+    the original PDFs.
+```
+
+**Do not attempt to read large PDFs directly.** If a PDF is over ~5MB or has more than 30 pages, always pre-extract via the script.
 
 **Read each paper fully before extracting. Do not skim.**
 
@@ -212,4 +241,6 @@ All distractors must be plausible and concise (maximum 15 words per distractor) 
 - **Quiz questions with obvious answers**: If guessable without reading, rewrite.
 - **Missing quiz question types**: Every paper needs at least one methodology, one findings, and one critical-thinking question. Do not fill the quota with three comprehension questions.
 - **Proceeding without the template**: Never attempt to reconstruct the HTML from memory. If the template file is missing, stop and ask the user to provide it.
+- **Reading large PDFs directly in Claude Code**: Any PDF over ~5MB or 30 pages will fail with "Request too large." Always run `pdf_to_txt.py` first and read the `.txt` output. Do not try to read PDFs directly and retry on failure — run the script *before* the first attempt.
+- **Delegating extraction to agents when output format is strict**: Agents frequently output instructions or preamble instead of clean JSON when asked to "return only JSON." For the extraction step, prefer doing it in the main conversation where output format is easier to control.
 - **Moving `init()` before the data block**: `init()` must run after `paper-data` is in the DOM. Never place it inside the main `<script>` block or before the data injection block.
