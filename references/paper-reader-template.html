@@ -1235,7 +1235,324 @@
 
   .btn-primary:hover { background: var(--accent-dark); }
 
-  /* synthesis empty */
+  /* ── NETWORK VIEW ── */
+  #network-view { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+  #network-view.active { display: flex; }
+
+  .network-layout { display: flex; flex: 1; overflow: hidden; }
+
+  .network-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 40px;
+    background: var(--paper-warm);
+  }
+
+  .network-panel {
+    width: 320px;
+    flex-shrink: 0;
+    border-left: 1px solid var(--paper-border);
+    background: white;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .network-panel-header {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--paper-border);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .network-panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+  }
+
+  .network-panel-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 13px;
+    font-style: italic;
+  }
+
+  /* shared questions */
+  .network-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 12px;
+  }
+
+  .shared-question-card {
+    background: white;
+    border: 1px solid var(--paper-border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+  }
+
+  .shared-question-text {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .shared-question-papers { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  /* method clusters */
+  .method-cluster {
+    background: var(--indigo-light);
+    border: 1px solid #c5cae9;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+  }
+
+  .method-cluster-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--indigo);
+    margin-bottom: 8px;
+  }
+
+  .method-cluster-papers { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  /* divergence */
+  .divergence-card {
+    background: white;
+    border: 1.5px solid #fca5a5;
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+  }
+
+  .divergence-topic {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--rose);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+
+  .divergence-stance {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+
+  .divergence-stance-tag {
+    flex-shrink: 0;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    background: var(--rose-light);
+    color: var(--rose);
+    white-space: nowrap;
+    align-self: flex-start;
+    margin-top: 2px;
+  }
+
+  /* edge list */
+  .edge-card {
+    background: white;
+    border: 1px solid var(--paper-border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .edge-card:hover { border-color: var(--accent); box-shadow: 0 4px 16px rgba(193,123,63,0.12); }
+  .edge-card.selected { border-color: var(--accent); box-shadow: 0 4px 16px rgba(193,123,63,0.18); }
+
+  .edge-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    border-radius: 12px 0 0 12px;
+  }
+
+  /* edge type colors */
+  .edge-card.type-provides_foundation::before { background: var(--indigo); }
+  .edge-card.type-empirically_tests::before { background: var(--emerald); }
+  .edge-card.type-contradicts::before { background: var(--rose); }
+  .edge-card.type-extends::before { background: var(--accent); }
+  .edge-card.type-replicates::before { background: #6366f1; }
+  .edge-card.type-challenges_assumption::before { background: #d97706; }
+  .edge-card.type-methodologically_complements::before { background: #0891b2; }
+
+  .edge-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding-left: 10px;
+  }
+
+  .edge-route {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  .edge-route-sep { color: var(--ink-faint); margin: 0 4px; }
+
+  .edge-badges { display: flex; gap: 5px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+
+  .edge-type-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .type-provides_foundation .edge-type-badge { background: var(--indigo-light); color: var(--indigo); }
+  .type-empirically_tests .edge-type-badge { background: var(--emerald-light); color: var(--emerald); }
+  .type-contradicts .edge-type-badge { background: var(--rose-light); color: var(--rose); }
+  .type-extends .edge-type-badge { background: var(--accent-light); color: var(--accent-dark); }
+  .type-replicates .edge-type-badge { background: #ede9fe; color: #6d28d9; }
+  .type-challenges_assumption .edge-type-badge { background: #fef3c7; color: #b45309; }
+  .type-methodologically_complements .edge-type-badge { background: #e0f2fe; color: #0369a1; }
+
+  /* confidence + evidence badges */
+  .conf-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .conf-high { background: var(--emerald-light); color: var(--emerald); }
+  .conf-medium { background: var(--amber-light); color: var(--amber); }
+  .conf-low { background: var(--rose-light); color: var(--rose); }
+
+  .evidence-badge {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .evidence-explicit_citation { background: #dcfce7; color: #166534; }
+  .evidence-textual_inference { background: #fef9c3; color: #854d0e; }
+  .evidence-thematic_overlap { background: #f3f4f6; color: #4b5563; }
+
+  /* confidence opacity on cards */
+  .edge-card.conf-low-card { opacity: 0.72; }
+
+  .edge-desc {
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    padding-left: 10px;
+    margin-top: 4px;
+  }
+
+  .edge-quote {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: var(--paper-warm);
+    border-left: 3px solid var(--paper-border);
+    border-radius: 0 6px 6px 0;
+    font-size: 11.5px;
+    font-style: italic;
+    color: var(--ink-faint);
+    line-height: 1.6;
+    padding-left: 10px;
+  }
+
+  .ai-inferred-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--amber-light);
+    border: 1px solid #fcd34d;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--amber);
+    font-weight: 500;
+    margin-bottom: 20px;
+  }
+
+  /* view toggle tabs */
+  .network-view-toggle {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: var(--paper-border);
+    border-radius: 10px;
+    width: fit-content;
+  }
+
+  .network-toggle-btn {
+    padding: 7px 16px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-faint);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .network-toggle-btn.active { background: white; color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+
+  .network-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .paper-chip {
+    padding: 3px 10px;
+    background: var(--accent-light);
+    border: 1px solid rgba(193,123,63,0.25);
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    cursor: pointer;
+    transition: background 0.12s;
+    white-space: nowrap;
+  }
+  .paper-chip:hover { background: rgba(193,123,63,0.18); }
+
+
   #synthesis-view .view-header {
     padding: 28px 40px 24px;
     border-bottom: 1px solid var(--paper-border);
@@ -1282,6 +1599,9 @@
     </button>
     <button class="nav-btn" id="nav-glossary" onclick="switchView('glossary')">
       <span class="nav-icon">💡</span> Concept Glossary
+    </button>
+    <button class="nav-btn" id="nav-network" onclick="switchView('network')">
+      <span class="nav-icon">🕸️</span> Paper Network
     </button>
     <button class="nav-btn" id="nav-chat" onclick="switchView('chat')">
       <span class="nav-icon">💬</span> Research Assistant
@@ -1417,6 +1737,28 @@
     </div>
   </div>
 
+  <!-- NETWORK VIEW -->
+  <div id="network-view">
+    <div class="view-header" style="padding:28px 40px 24px;border-bottom:1px solid var(--paper-border);background:white;">
+      <h2 class="view-title">Paper Network</h2>
+      <p class="view-desc">Relationships between papers — knowledge dependencies, methodological connections, and divergences. All relationships are AI-inferred; verify against source texts.</p>
+    </div>
+    <div class="network-layout">
+      <div class="network-main" id="network-main">
+        <div class="empty-library">
+          <div style="font-size:40px;margin-bottom:16px;opacity:0.3;">🕸️</div>
+          <p>Load at least 2 papers with network data to see relationships.</p>
+        </div>
+      </div>
+      <div class="network-panel">
+        <div class="network-panel-header">Edge Detail</div>
+        <div class="network-panel-body" id="network-panel-body">
+          <div class="network-panel-empty">Click any relationship card to see details and evidence.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- GLOSSARY VIEW -->
   <div id="glossary-view">
     <div class="glossary-layout">
@@ -1505,6 +1847,7 @@ function switchView(view) {
 
   document.getElementById('library-view').classList.toggle('active', false);
   document.getElementById('synthesis-view').classList.toggle('active', false);
+  document.getElementById('network-view').classList.toggle('active', false);
   document.getElementById('glossary-view').classList.toggle('active', false);
   document.getElementById('chat-view').classList.toggle('active', false);
 
@@ -1591,6 +1934,7 @@ function loadPaper() {
   selectPaper(data.id);
   renderPaperList();
   renderSynthesis();
+  renderNetwork();
 }
 
 // ── RENDER PAPER LIST ──
@@ -1779,7 +2123,300 @@ function retakeQuiz() {
   renderQuiz();
 }
 
-// ── SYNTHESIS ──
+// ── NETWORK ──
+let paperNetwork = null;
+let selectedEdgeIdx = null;
+
+const EDGE_TYPE_LABELS = {
+  provides_foundation: 'Provides Foundation',
+  empirically_tests: 'Empirically Tests',
+  contradicts: 'Contradicts',
+  extends: 'Extends',
+  replicates: 'Replicates',
+  challenges_assumption: 'Challenges Assumption',
+  methodologically_complements: 'Methodologically Complements'
+};
+
+const EVIDENCE_LABELS = {
+  explicit_citation: 'Explicit citation',
+  textual_inference: 'Textual inference',
+  thematic_overlap: 'Thematic overlap'
+};
+
+function paperLabel(id) {
+  const p = papers.find(x => x.id === id);
+  return p ? p.authors.split(',')[0].trim() + ' ' + p.year : id;
+}
+
+// ── EDGE TYPE COLORS (shared between SVG and cards) ──
+const EDGE_COLORS = {
+  provides_foundation: '#2d3a8c',
+  empirically_tests:   '#2d6a4f',
+  contradicts:         '#9b2335',
+  extends:             '#c17b3f',
+  replicates:          '#6366f1',
+  challenges_assumption: '#d97706',
+  methodologically_complements: '#0891b2'
+};
+
+function buildNetworkSVG(net) {
+  const W = 760, H = 340;
+  const allIds = [...new Set([
+    ...net.edges.map(e => e.from),
+    ...net.edges.map(e => e.to)
+  ])];
+
+  // Position nodes in a circle or line based on count
+  const n = allIds.length;
+  const cx = W / 2, cy = H / 2;
+  const rx = n <= 2 ? 180 : 210, ry = n <= 2 ? 0 : 110;
+  const nodePos = {};
+  allIds.forEach((id, i) => {
+    const angle = (2 * Math.PI * i / n) - Math.PI / 2;
+    nodePos[id] = {
+      x: cx + rx * Math.cos(angle),
+      y: cy + ry * Math.sin(angle)
+    };
+  });
+
+  // Node dimensions
+  const NW = 148, NH = 54, NR = 10;
+
+  // Build defs (arrowheads per color)
+  let defs = '<defs>';
+  Object.entries(EDGE_COLORS).forEach(([type, color]) => {
+    defs += `<marker id="arrow-${type}" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="${color}" opacity="0.85"/>
+    </marker>`;
+  });
+  // Dashed arrow for low-confidence
+  defs += `<marker id="arrow-low" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+    <path d="M0,0 L0,6 L8,3 z" fill="#aaa"/>
+  </marker>`;
+  defs += '</defs>';
+
+  // Draw edges first (below nodes)
+  let edgeSvg = '';
+  net.edges.forEach((edge, i) => {
+    const from = nodePos[edge.from];
+    const to   = nodePos[edge.to];
+    if (!from || !to) return;
+
+    const color = EDGE_COLORS[edge.type] || '#888';
+    const isLow = edge.confidence === 'low';
+    const isDash = edge.evidence === 'thematic_overlap';
+    const typeLabel = EDGE_TYPE_LABELS[edge.type] || edge.type || '';
+
+    // Vector from → to
+    const dx = to.x - from.x, dy = to.y - from.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const ux = dx/dist, uy = dy/dist;
+
+    // Start point: edge of source node box
+    const sx = from.x + ux * (NW/2 + 4);
+    const sy = from.y + uy * (NH/2 + 2);
+    // End point: edge of target node box (shorten for arrowhead)
+    const ex = to.x - ux * (NW/2 + 14);
+    const ey = to.y - uy * (NH/2 + 8);
+
+    // Slight curve: perpendicular offset
+    const offset = 28;
+    const px = -(dy/dist) * offset;
+    const py =  (dx/dist) * offset;
+    const qx = (sx+ex)/2 + px, qy = (sy+ey)/2 + py;
+
+    const strokeColor = isLow ? '#bbb' : color;
+    const markerId = isLow ? 'arrow-low' : `arrow-${edge.type}`;
+    const dashAttr = isDash ? 'stroke-dasharray="6 3"' : '';
+    const opAttr = isLow ? 'opacity="0.5"' : 'opacity="0.85"';
+
+    // Path
+    edgeSvg += `<path id="svgedge-${i}" d="M${sx},${sy} Q${qx},${qy} ${ex},${ey}"
+      fill="none" stroke="${strokeColor}" stroke-width="2" ${dashAttr} ${opAttr}
+      marker-end="url(#${markerId})"
+      style="cursor:pointer" onclick="selectEdge(${i})" class="svg-edge"/>`;
+
+    // Label on midpoint of curve
+    const lx = 0.25*sx + 0.5*qx + 0.25*ex;
+    const ly = 0.25*sy + 0.5*qy + 0.25*ey;
+    const shortLabel = typeLabel.replace('Methodologically ', 'Meth. ').replace('Provides ', '').replace(' Assumption','');
+    edgeSvg += `<text x="${lx}" y="${ly - 6}" text-anchor="middle"
+      font-size="9.5" font-family="DM Sans, sans-serif" font-weight="600"
+      fill="${strokeColor}" ${opAttr} style="pointer-events:none">${shortLabel}</text>`;
+  });
+
+  // Draw nodes
+  let nodeSvg = '';
+  allIds.forEach(id => {
+    const pos = nodePos[id];
+    const p = papers.find(x => x.id === id);
+    const label = p ? p.authors.split(',')[0].trim() : id;
+    const year  = p ? p.year : '';
+    const nx = pos.x - NW/2, ny = pos.y - NH/2;
+
+    nodeSvg += `<g class="svg-node" style="cursor:pointer" onclick="selectPaper('${id}')">
+      <rect x="${nx}" y="${ny}" width="${NW}" height="${NH}" rx="${NR}" ry="${NR}"
+        fill="white" stroke="#e8e4dc" stroke-width="1.5"
+        style="filter:drop-shadow(0 2px 6px rgba(26,26,46,0.09))"/>
+      <text x="${pos.x}" y="${pos.y - 6}" text-anchor="middle"
+        font-size="12" font-family="Lora, serif" font-weight="700" fill="#1a1a2e">${label}</text>
+      <text x="${pos.x}" y="${pos.y + 12}" text-anchor="middle"
+        font-size="10" font-family="DM Mono, monospace" fill="#8888aa">${year}</text>
+    </g>`;
+  });
+
+  // Legend
+  const legendTypes = [...new Set(net.edges.map(e => e.type))];
+  let legend = `<g transform="translate(12,${H - 14 - legendTypes.length * 16})">`;
+  legendTypes.forEach((type, i) => {
+    const color = EDGE_COLORS[type] || '#888';
+    const label = (EDGE_TYPE_LABELS[type] || type).replace('Methodologically Complements', 'Meth. Complements');
+    legend += `<line x1="0" y1="${i*16}" x2="18" y2="${i*16}" stroke="${color}" stroke-width="2" opacity="0.85"/>
+      <polygon points="14,${i*16-3} 14,${i*16+3} 20,${i*16}" fill="${color}" opacity="0.85"/>
+      <text x="24" y="${i*16+4}" font-size="9.5" font-family="DM Sans,sans-serif" fill="#4a4a6a">${label}</text>`;
+  });
+  legend += '</g>';
+
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"
+    style="width:100%;max-height:340px;border-radius:14px;border:1px solid var(--paper-border);background:var(--paper-warm);display:block;">
+    ${defs}${edgeSvg}${nodeSvg}${legend}
+  </svg>`;
+}
+
+function highlightSvgEdge(idx) {
+  document.querySelectorAll('.svg-edge').forEach((el, i) => {
+    el.style.strokeWidth = i === idx ? '3.5' : '2';
+    el.style.opacity     = i === idx ? '1'   : '0.5';
+  });
+}
+
+function renderNetwork() {
+  const el = document.getElementById('network-main');
+  if (!paperNetwork || !paperNetwork.edges || paperNetwork.edges.length === 0) {
+    el.innerHTML = '<div class="empty-library"><div style="font-size:40px;margin-bottom:16px;opacity:0.3;">🕸️</div><p>No network data found. Make sure papers were processed with the updated paper-reader skill.</p></div>';
+    return;
+  }
+
+  const net = paperNetwork;
+  let html = '';
+
+  // ── DIAGRAM ──
+  html += '<div style="margin-bottom:8px;">';
+  html += '<div class="network-section-label" style="margin-bottom:10px;">Relationship Diagram</div>';
+  html += buildNetworkSVG(net);
+  html += '<div style="font-size:11px;color:var(--ink-faint);margin-top:6px;margin-bottom:28px;">Click a node to open that paper · Click an edge label to see details below</div>';
+  html += '</div>';
+
+  // AI inferred banner
+  html += '<div class="ai-inferred-banner">⚠️ <span>All relationships are <strong>AI-inferred</strong>. Explicit-citation edges are most reliable; thematic-overlap edges are hypotheses to verify.</span></div>';
+
+  // Shared research questions
+  if (net.sharedQuestions && net.sharedQuestions.length > 0) {
+    html += '<div class="network-section-label" style="margin-bottom:14px;">Shared Research Questions</div>';
+    net.sharedQuestions.forEach(q => {
+      const chips = (q.papers || []).map(id =>
+        '<span class="paper-chip" onclick="selectPaper(\'' + id + '\')">' + paperLabel(id) + '</span>'
+      ).join('');
+      html += '<div class="shared-question-card"><div class="shared-question-text">' + q.question + '</div><div class="shared-question-papers">' + chips + '</div></div>';
+    });
+    html += '<div style="margin-bottom:28px;"></div>';
+  }
+
+  // Methodological clusters
+  if (net.methodologicalClusters && net.methodologicalClusters.length > 0) {
+    html += '<div class="network-section-label" style="margin-bottom:14px;">Methodological Clusters</div>';
+    net.methodologicalClusters.forEach(c => {
+      const chips = (c.papers || []).map(id =>
+        '<span class="paper-chip" onclick="selectPaper(\'' + id + '\')">' + paperLabel(id) + '</span>'
+      ).join('');
+      html += '<div class="method-cluster"><div class="method-cluster-label">' + c.approach + '</div><div class="method-cluster-papers">' + chips + '</div></div>';
+    });
+    html += '<div style="margin-bottom:28px;"></div>';
+  }
+
+  // Edges
+  html += '<div class="network-section-label" style="margin-bottom:14px;">Relationship Detail Cards</div>';
+  net.edges.forEach((edge, i) => {
+    const typeClass = 'type-' + (edge.type || 'extends');
+    const confClass = edge.confidence === 'low' ? 'conf-low-card' : '';
+    const typeLabel = EDGE_TYPE_LABELS[edge.type] || edge.type || '—';
+    const confBadge = '<span class="conf-badge conf-' + (edge.confidence || 'medium') + '">' + (edge.confidence || '?') + '</span>';
+    const evidBadge = edge.evidence
+      ? '<span class="evidence-badge evidence-' + edge.evidence + '">' + (EVIDENCE_LABELS[edge.evidence] || edge.evidence) + '</span>'
+      : '';
+
+    html += '<div class="edge-card ' + typeClass + ' ' + confClass + '" id="edge-' + i + '" onclick="selectEdge(' + i + ')">' +
+      '<div class="edge-card-header">' +
+        '<div class="edge-route">' + paperLabel(edge.from) + '<span class="edge-route-sep">→</span>' + paperLabel(edge.to) + '</div>' +
+        '<div class="edge-badges"><span class="edge-type-badge">' + typeLabel + '</span>' + confBadge + evidBadge + '</div>' +
+      '</div>' +
+      '<div class="edge-desc">' + (edge.description || '') + '</div>' +
+    '</div>';
+  });
+
+  // Divergence points
+  if (net.divergencePoints && net.divergencePoints.length > 0) {
+    html += '<div style="margin-top:32px;margin-bottom:14px;" class="network-section-label">Divergence Points</div>';
+    net.divergencePoints.forEach(d => {
+      const stances = (d.positions || []).map(pos =>
+        '<div class="divergence-stance"><span class="divergence-stance-tag">' + paperLabel(pos.paper) + '</span><span>' + pos.stance + '</span></div>'
+      ).join('');
+      html += '<div class="divergence-card"><div class="divergence-topic">⚡ ' + d.topic + '</div>' + stances + '</div>';
+    });
+  }
+
+  el.innerHTML = html;
+}
+
+function selectEdge(i) {
+  selectedEdgeIdx = i;
+  const net = paperNetwork;
+  if (!net || !net.edges || !net.edges[i]) return;
+  const edge = net.edges[i];
+
+  // highlight selected card
+  document.querySelectorAll('.edge-card').forEach((el, idx) => {
+    el.classList.toggle('selected', idx === i);
+  });
+
+  // highlight SVG edge
+  highlightSvgEdge(i);
+
+  // scroll card into view
+  const card = document.getElementById('edge-' + i);
+  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  const typeLabel = EDGE_TYPE_LABELS[edge.type] || edge.type || '—';
+  const confLabel = edge.confidence ? edge.confidence.charAt(0).toUpperCase() + edge.confidence.slice(1) : '—';
+  const evidLabel = EVIDENCE_LABELS[edge.evidence] || edge.evidence || '—';
+
+  let panelHtml =
+    '<div style="margin-bottom:16px;">' +
+      '<div style="font-size:11px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Relationship</div>' +
+      '<div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px;">' + paperLabel(edge.from) + '</div>' +
+      '<div style="font-size:12px;color:var(--ink-faint);margin-bottom:4px;">↓ ' + typeLabel + '</div>' +
+      '<div style="font-size:14px;font-weight:700;color:var(--ink);">' + paperLabel(edge.to) + '</div>' +
+    '</div>' +
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;">' +
+      '<span class="conf-badge conf-' + (edge.confidence || 'medium') + '">' + confLabel + ' confidence</span>' +
+      (edge.evidence ? '<span class="evidence-badge evidence-' + edge.evidence + '">' + evidLabel + '</span>' : '') +
+    '</div>' +
+    '<div style="font-size:11px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px;">Description</div>' +
+    '<div style="font-size:13px;line-height:1.65;color:var(--ink-soft);margin-bottom:20px;">' + (edge.description || '—') + '</div>';
+
+  if (edge.evidenceQuote) {
+    panelHtml +=
+      '<div style="font-size:11px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px;">Evidence Quote</div>' +
+      '<div class="edge-quote">"' + edge.evidenceQuote + '"</div>';
+  } else {
+    panelHtml +=
+      '<div style="font-size:12px;color:var(--ink-faint);font-style:italic;">No direct quote available — relationship inferred from content.</div>';
+  }
+
+  document.getElementById('network-panel-body').innerHTML = panelHtml;
+}
+
+
 function renderSynthesis() {
   const el = document.getElementById('synthesis-content');
   if (papers.length < 2) {
@@ -2045,6 +2682,7 @@ function init() {
 
   const loadedPapers = payload.papers || [];
   const loadedGlossary = payload.glossaryTerms || [];
+  paperNetwork = payload.paperNetwork || null;
 
   if (loadedPapers.length === 0) { switchView('library'); return; }
 
@@ -2060,6 +2698,7 @@ function init() {
 
   renderPaperList();
   renderSynthesis();
+  renderNetwork();
 
   // Select first paper and show library
   selectPaper(loadedPapers[0].id);

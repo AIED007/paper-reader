@@ -22,7 +22,7 @@ Reads one or more academic papers and outputs a single self-contained HTML file.
 
 **CRITICAL: Template Check Before Starting**
 Before doing anything else, locate the template file. Try these paths in order:
-1. `/mnt/skills/user/paper-reader/paper-reader-template.html` — skill installed in user skills
+1. `/mnt/skills/user/paper-reader/references/paper-reader-template.html` — skill installed in user skills (original)
 2. `/mnt/user-data/uploads/paper-reader-template.html` — user uploaded it manually
 
 If neither path exists, tell the user:
@@ -35,36 +35,7 @@ Ask the user what domain or field they are working in (default is AI-EdTech) so 
 
 Read every paper the user has provided before extracting anything.
 
-**Handling PDFs — choose the right path based on environment:**
-
-| Situation | Action |
-|---|---|
-| Running in Claude.ai (web) | Use the pdf-reading skill: `/mnt/skills/public/pdf-reading/SKILL.md` |
-| Running in Claude Code (local files) | Use the **local PDF pre-processing flow** below |
-| User pastes text or provides URLs | Use directly — no conversion needed |
-
-**Local PDF pre-processing flow (Claude Code only):**
-
-PDFs read directly via the `Read` tool often fail with "Request too large" when files exceed ~5MB, because embedded images and layout data inflate file size. The solution is to extract plain text first using the helper script in `references/pdf_to_txt.py`.
-
-```
-Step 1a — Check if PyPDF2 is installed:
-    python3 -c "import PyPDF2" 2>/dev/null || pip3 install PyPDF2
-
-Step 1b — Run the extractor on all PDFs in one command:
-    python3 ~/.claude/skills/paper-reader/references/pdf_to_txt.py \
-        "paper1.pdf" "paper2.pdf" "paper3.pdf"
-    (use the actual absolute paths)
-
-Step 1c — Verify output. The script prints "OK  <path>  (N KB)" for each
-    successful file. If any file shows "FAIL", report it to the user before
-    continuing.
-
-Step 1d — Read the resulting .txt files with the Read tool instead of
-    the original PDFs.
-```
-
-**Do not attempt to read large PDFs directly.** If a PDF is over ~5MB or has more than 30 pages, always pre-extract via the script.
+If the user uploads PDFs, use the pdf-reading skill (`/mnt/skills/public/pdf-reading/SKILL.md`). If they paste text or provide URLs, use those directly.
 
 **Read each paper fully before extracting. Do not skim.**
 
@@ -160,7 +131,74 @@ Collect all `keyConcepts` across every paper. For each unique concept, create on
 
 ---
 
-## Step 4 — Assemble and output the HTML file
+## Step 3.5 — Build the paper network (multi-paper only)
+
+**Skip this step if fewer than 2 papers are loaded.**
+
+Analyse relationships across all papers and produce a `paperNetwork` object. This powers the **Paper Network** view in the HTML, which renders as two layers: (1) an auto-generated SVG relationship diagram at the top showing paper nodes and labeled directed edges, and (2) detail cards below each edge. Claude only needs to supply the correct JSON data — the SVG diagram is built entirely by the template's JavaScript and requires no additional work from Claude.
+
+Read all papers again holistically before generating edges. Do not generate edges from memory of individual extractions — look for actual argumentative, methodological, and conceptual connections.
+
+```json
+{
+  "sharedQuestions": [
+    {
+      "question": "One sentence describing a research question that 2+ papers address",
+      "papers": ["author-year", "author-year"]
+    }
+  ],
+  "methodologicalClusters": [
+    {
+      "approach": "e.g. 'Randomized Controlled Trial', 'Ethnographic Field Study', 'Systematic Review'",
+      "papers": ["author-year"]
+    }
+  ],
+  "edges": [
+    {
+      "from": "author-year",
+      "to": "author-year",
+      "type": "provides_foundation | empirically_tests | contradicts | extends | replicates | challenges_assumption | methodologically_complements",
+      "evidence": "explicit_citation | textual_inference | thematic_overlap",
+      "evidenceQuote": "Verbatim sentence from either paper that supports this edge, or null if none",
+      "confidence": "high | medium | low",
+      "description": "1–2 sentences explaining what this relationship means concretely"
+    }
+  ],
+  "divergencePoints": [
+    {
+      "topic": "Name of the contested claim or construct",
+      "positions": [
+        { "paper": "author-year", "stance": "This paper's position in 1 sentence" }
+      ]
+    }
+  ]
+}
+```
+
+**Edge type definitions:**
+- `provides_foundation` — Paper A's theory, framework, or construct is adopted as a basis by Paper B
+- `empirically_tests` — Paper B provides empirical data that tests a claim made in Paper A
+- `contradicts` — Paper B's findings directly oppose Paper A's on the same variable or outcome (require genuine directional conflict, not merely different results in different populations)
+- `extends` — Paper B builds on Paper A's scope, population, or context without contradicting it
+- `replicates` — Paper B attempts to reproduce Paper A's study design or findings
+- `challenges_assumption` — Paper B questions a methodological or theoretical assumption Paper A relies on, without necessarily contradicting its findings
+- `methodologically_complements` — Papers address the same question with different methods (e.g. lab vs. field, quantitative vs. qualitative) at different ecological validity levels
+
+**Confidence rules:**
+- `high` — Supported by explicit cross-citation AND direction of argument is unambiguous
+- `medium` — No cross-citation but the textual evidence is clear and the inference is defensible
+- `low` — Inferred from thematic overlap only; no direct textual support
+
+**Critical constraints:**
+- Never generate `contradicts` edges for papers that merely have different findings in different contexts — contradiction requires the same construct measured in comparable conditions with opposing directional results
+- Never generate `provides_foundation` without being able to name the specific theory or framework being adopted
+- Keep `evidenceQuote` under 50 words; null is better than a fabricated quote
+- Aim for 2–6 edges total for a 3-paper set; do not force edges where none exist
+- `divergencePoints` should only appear when there is a genuine interpretive or empirical disagreement, not merely different research foci
+
+---
+
+
 
 
 
@@ -178,7 +216,8 @@ Replace **only the contents of the paper-data script tag** with the assembled da
 ```json
 {
   "papers": [ /* all extracted paper objects from Step 2 */ ],
-  "glossaryTerms": [ /* merged glossary from Step 3 */ ]
+  "glossaryTerms": [ /* merged glossary from Step 3 */ ],
+  "paperNetwork": { /* network object from Step 3.5, or null if single paper */ }
 }
 ```
 
@@ -235,12 +274,13 @@ All distractors must be plausible and concise (maximum 15 words per distractor) 
 - **futureWork mixed with weaknesses**: futureWork = authors' own words; weaknesses = your external critique.
 - **Duplicate glossary entries**: One entry per concept across all papers. Use `relatedPapers` to link multiple papers.
 - **Sparse `relatedPapers`**: Every concept shared across 2+ papers must have all paper IDs listed. An empty or single-entry `relatedPapers` on a shared concept breaks the Synthesis Lab.
+- **Over-generating edges**: Do not force a `contradicts` edge because two papers have different findings. Require genuine directional conflict on the same variable.
+- **Fabricating evidenceQuote**: If no direct quote supports the edge, set `evidenceQuote` to null. Never invent a quote.
+- **Assigning high confidence to thematic_overlap edges**: `thematic_overlap` evidence must map to `low` confidence. High confidence requires `explicit_citation`.
 - **Circular glossary definitions**: Don't define "self-regulated learning" as "learning that is self-regulated."
 - **keyQuotes from the methods section**: Pick sentences that make someone want to read the paper.
 - **Shallow weaknesses**: "Small sample size" with no explanation of what it invalidates is a placeholder.
 - **Quiz questions with obvious answers**: If guessable without reading, rewrite.
 - **Missing quiz question types**: Every paper needs at least one methodology, one findings, and one critical-thinking question. Do not fill the quota with three comprehension questions.
 - **Proceeding without the template**: Never attempt to reconstruct the HTML from memory. If the template file is missing, stop and ask the user to provide it.
-- **Reading large PDFs directly in Claude Code**: Any PDF over ~5MB or 30 pages will fail with "Request too large." Always run `pdf_to_txt.py` first and read the `.txt` output. Do not try to read PDFs directly and retry on failure — run the script *before* the first attempt.
-- **Delegating extraction to agents when output format is strict**: Agents frequently output instructions or preamble instead of clean JSON when asked to "return only JSON." For the extraction step, prefer doing it in the main conversation where output format is easier to control.
 - **Moving `init()` before the data block**: `init()` must run after `paper-data` is in the DOM. Never place it inside the main `<script>` block or before the data injection block.
